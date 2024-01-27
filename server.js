@@ -71,8 +71,10 @@ app.post('/api/messages', async (req, res) => {
     // Send email notification
     sendEmailNotification(name, email, message);
 
+    // If everything above succeeds, this line sends a 200 OK response with JSON data
     res.status(200).json({ id: newMessageRef.id, name, email, message });
   } catch (err) {
+    // If there's an error, it sends a 500 Internal Server Error response
     console.error(err.message);
     res.status(500).send('Server error');
   }
