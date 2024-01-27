@@ -3,28 +3,32 @@ const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
 const nodemailer = require('nodemailer')
+const admin = require('firebase-admin');
 
 // Initialize express and setup middleware
+
+
+
+
+const serviceAccount = require('./portfolio-13ed0-firebase-adminsdk-vzjz8-9871a56611.json'); // Update the path
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
+
 const app = express();
+
 app.use(express.json()); // Body parsing middleware
-
-
-const corsOptions = {
-  origin: ['https://www.robertguzman-port.net', 'http://localhost:3000'],
-  optionsSuccessStatus: 200 // For legacy browser support
-};
-
-app.use(cors(corsOptions));
-
+app.use(cors())
 
 // PostgreSQL connection
-const pool = new Pool({
-  user: process.env.DB_USER, //
-  host: process.env.DB_HOST, // 
-  database: process.env.DB_DATABASE, // 
-  password: process.env.DB_PASSWORD, // 
-  port: process.env.DB_PORT, // 
-});
+// const pool = new Pool({
+//   user: process.env.DB_USER, //
+//   host: process.env.DB_HOST, // 
+//   database: process.env.DB_DATABASE, // 
+//   password: process.env.DB_PASSWORD, // 
+//   port: process.env.DB_PORT, // 
+// });
 
 // Email sending function
 async function sendEmailNotification(name, userEmail, message) {
@@ -67,29 +71,43 @@ async function sendEmailNotification(name, userEmail, message) {
 
 // POST endpoint to receive messages
 app.post('/api/messages', async (req, res) => {
-    const { name, email, message } = req.body;
-  
-    try {
-      // Insert message into the database
-      const newMessage = await pool.query(
-        'INSERT INTO contact (name, email, message) VALUES ($1, $2, $3) RETURNING *',
-        [name, email, message]
-      );
-  
-      // Send email notification
-      sendEmailNotification(name, email, message);
-  
-      res.status(200).json(newMessage.rows[0]);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
-  });
+  const { name, email, message } = req.body;
+
+  try {
+    // Add message to Firestore
+    const newMessageRef = db.collection('messages').doc();
+    await newMessageRef.set({ name, email, message });
+    
+    // Send email notification
+    sendEmailNotification(name, email, message);
+
+    res.status(200).json({ id: newMessageRef.id, name, email, message });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// GET endpoint to retrieve all messages
+app.get('/api/messages', async (req, res) => {
+  try {
+    const messagesRef = db.collection('messages');
+    const snapshot = await messagesRef.get();
+
+    const messages = [];
+    snapshot.forEach(doc => {
+      messages.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.status(200).json(messages);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
 
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-console.log("Connecting to DB:", process.env.DB_DATABASE);
