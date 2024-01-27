@@ -69,7 +69,7 @@ app.post('/api/messages', async (req, res) => {
     await newMessageRef.set({ name, email, message });
     
     // Send email notification
-    sendEmailNotification(name, email, message);
+    await sendEmailNotification(name, email, message);
 
     // If everything above succeeds, this line sends a 200 OK response with JSON data
     res.status(200).json({ id: newMessageRef.id, name, email, message });
