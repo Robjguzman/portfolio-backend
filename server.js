@@ -10,7 +10,7 @@ app.use(express.json()); // Body parsing middleware
 
 
 const corsOptions = {
-  origin: 'https://www.robertguzman-port.net',
+  origin: ['https://www.robertguzman-port.net', 'http://localhost:3000'],
   optionsSuccessStatus: 200 // For legacy browser support
 };
 
