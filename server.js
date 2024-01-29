@@ -18,47 +18,41 @@ app.use(express.json()); // Body parsing middleware
 app.use(cors());
 
 // Email sending function
+// Email sending function modified for asynchronous operation
 async function sendEmailNotification(name, userEmail, message) {
-    const transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE,
-      auth: {
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+  const transporter = nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE,
+    auth: {
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
 
-    // Email to the website owner
-    const ownerMailOptions = {
-      from: process.env.EMAIL_USERNAME,
-      to: 'robertjguzman15@gmail.com',
-      subject: 'New Portfolio Message',
-      text: `You have received a new message from ${name} (${userEmail}): ${message}`,
-    };
+  // Email to the website owner
+  const ownerMailOptions = {
+    from: process.env.EMAIL_USERNAME,
+    to: 'robertjguzman15@gmail.com',
+    subject: 'New Portfolio Message',
+    text: `You have received a new message from ${name} (${userEmail}): ${message}`,
+  };
 
-    // Email to the user
-    const userMailOptions = {
-      from: process.env.EMAIL_USERNAME,
-      to: userEmail,
-      subject: 'Your Message Has Been Received',
-      text: `Hello ${name},\n\nWe have received your message and will get back to you soon. Here's what you sent us:\n\n${message}`,
-    };
+  // Email to the user
+  const userMailOptions = {
+    from: process.env.EMAIL_USERNAME,
+    to: userEmail,
+    subject: 'Your Message Has Been Received',
+    text: `Hello ${name},\n\nWe have received your message and will get back to you soon. Here's what you sent us:\n\n${message}`,
+  };
 
-    try {
-      // Send email to the website owner
-      await transporter.sendMail(ownerMailOptions);
-      console.log('Notification email sent to owner successfully');
-
-      // Send confirmation email to the user
-      await transporter.sendMail(userMailOptions);
-      console.log('Confirmation email sent to user successfully');
-    } catch (error) {
-      console.error('Error sending email:', error);
-      // Add more error details if available
-      if (error.response) {
-        console.error('SMTP Server responded with:', error.response);
-      }
-    }
+  // Send emails asynchronously
+  transporter.sendMail(ownerMailOptions).catch(error => {
+      console.error('Error sending email to owner:', error);
+  });
+  transporter.sendMail(userMailOptions).catch(error => {
+      console.error('Error sending confirmation email to user:', error);
+  });
 }
+
 
 // POST endpoint to receive messages
 app.post('/api/messages', async (req, res) => {
