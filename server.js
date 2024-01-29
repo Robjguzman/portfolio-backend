@@ -17,16 +17,16 @@ app.use(express.json()); // Body parsing middleware
 app.use(cors());
 
 // Email sending function modified for asynchronous operation and better error handling
+// Email sending function modified for asynchronous operation and better error handling
 async function sendEmailNotification(name, userEmail, message) {
   try {
+    console.log('Setting up transporter...');
     const transporter = nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE,
       auth: {
         user: process.env.EMAIL_USERNAME,
         pass: process.env.EMAIL_PASSWORD,
       },
-      // Optional: Add a timeout (in milliseconds)
-      // timeout: 10000,
     });
 
     // Email to the website owner
@@ -45,13 +45,18 @@ async function sendEmailNotification(name, userEmail, message) {
       text: `Hello ${name},\n\nWe have received your message and will get back to you soon. Here's what you sent us:\n\n${message}`,
     };
 
-    // Send emails asynchronously
+    console.log('Sending email to owner...');
     await transporter.sendMail(ownerMailOptions);
+    console.log('Email sent to owner successfully.');
+
+    console.log('Sending confirmation email to user...');
     await transporter.sendMail(userMailOptions);
+    console.log('Confirmation email sent to user successfully.');
   } catch (error) {
     console.error('Error occurred in sendEmailNotification:', error);
   }
 }
+
 
 // POST endpoint to receive messages
 app.post('/api/messages', async (req, res) => {
