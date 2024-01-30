@@ -61,13 +61,17 @@ async function sendEmailNotification(name, userEmail, message) {
 // POST endpoint to receive messages
 app.post('/api/messages', async (req, res) => {
   const { name, email, message } = req.body;
+  const timestamp = Date.now();
 
   try {
-    // Add message to Firestore
-    const newMessageRef = db.collection('messages').doc();
-    await newMessageRef.set({ name, email, message });
 
-    console.log(`Message saved to Firestore with ID: ${newMessageRef.id}`);
+    // create unique id
+    const messageID = `{email}_${timestamp}`;
+    // Add message to Firestore
+    const newMessageRef = db.collection('messages').doc(messageID);
+    await newMessageRef.set({ name, email, message, timestamp });
+
+    console.log(`Message saved to Firestore with ID: ${messageID}`);
     
     // Send email notification
     await sendEmailNotification(name, email, message);
