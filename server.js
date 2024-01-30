@@ -2,7 +2,15 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require('nodemailer');
+const admin = require('firebase-admin')
 
+
+// Initialize Firebase Admin SDK
+const serviceAccount = require('./portfolio-13ed0-firebase-adminsdk-vzjz8-9871a56611.json'); // Update the path
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
 
 
 // Initialize express and setup middleware
