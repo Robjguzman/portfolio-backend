@@ -66,6 +66,8 @@ app.post('/api/messages', async (req, res) => {
     // Add message to Firestore
     const newMessageRef = db.collection('messages').doc();
     await newMessageRef.set({ name, email, message });
+
+    console.log(`Message saved to Firestore with ID: ${newMessageRef.id}`);
     
     // Send email notification
     await sendEmailNotification(name, email, message);
