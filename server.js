@@ -2,10 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require('nodemailer');
-const { Firestore } = require('@google-cloud/firestore');
 
-// Create a new client
-const db = new Firestore();
 
 
 // Initialize express and setup middleware
@@ -81,23 +78,7 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
-app.get('/api/messages', async (req, res) => {
-  try {
-    const messagesRef = db.collection('messages');
-    const snapshot = await messagesRef.get();
-    
-    const messages = [];
-    snapshot.forEach(doc => {
-      messages.push({ id: doc.id, ...doc.data() });
-    });
 
-    // Sending the array of messages as a JSON response
-    res.status(200).json(messages);
-  } catch (err) {
-    console.error('Error in GET /api/messages:', err.message);
-    res.status(500).send('Server error');
-  }
-});
 
 // Start the server
 const PORT = process.env.PORT || 5001;
