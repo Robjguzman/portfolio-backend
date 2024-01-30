@@ -2,14 +2,11 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require('nodemailer');
-const admin = require('firebase-admin');
+const { Firestore } = require('@google-cloud/firestore');
 
-// Initialize Firebase Admin SDK
-const serviceAccount = require('./portfolio-13ed0-firebase-adminsdk-vzjz8-9871a56611.json'); // Update the path
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-const db = admin.firestore();
+// Create a new client
+const db = new Firestore();
+
 
 // Initialize express and setup middleware
 const app = express();
@@ -17,7 +14,7 @@ app.use(express.json()); // Body parsing middleware
 app.use(cors());
 
 // Email sending function modified for asynchronous operation and better error handling
-// Email sending function modified for asynchronous operation and better error handling
+
 async function sendEmailNotification(name, userEmail, message) {
   try {
     console.log('Setting up transporter...');
@@ -42,7 +39,7 @@ async function sendEmailNotification(name, userEmail, message) {
       from: process.env.EMAIL_USERNAME,
       to: userEmail,
       subject: 'Your Message Has Been Received',
-      text: `Hello ${name},\n\nWe have received your message and will get back to you soon. Here's what you sent us:\n\n${message}`,
+      text: `Hello ${name},\n\nWe have received your message and will get back to you as soon as possible. Here's what you sent us:\n\n${message}`,
     };
 
     console.log('Sending email to owner...');
@@ -84,7 +81,23 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
-// Other endpoints remain unchanged
+app.get('/api/messages', async (req, res) => {
+  try {
+    const messagesRef = db.collection('messages');
+    const snapshot = await messagesRef.get();
+    
+    const messages = [];
+    snapshot.forEach(doc => {
+      messages.push({ id: doc.id, ...doc.data() });
+    });
+
+    // Sending the array of messages as a JSON response
+    res.status(200).json(messages);
+  } catch (err) {
+    console.error('Error in GET /api/messages:', err.message);
+    res.status(500).send('Server error');
+  }
+});
 
 // Start the server
 const PORT = process.env.PORT || 5001;
