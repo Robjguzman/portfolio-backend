@@ -12,7 +12,6 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-
 // Initialize express and setup middleware
 const app = express();
 app.use(express.json()); // Body parsing middleware
@@ -68,7 +67,7 @@ app.post('/api/messages', async (req, res) => {
   try {
 
     // create unique id
-    const messageID = `{email}_${timestamp}`;
+    const messageID = `${email}${timestamp}`;
     // Add message to Firestore
     const newMessageRef = db.collection('messages').doc(messageID);
     await newMessageRef.set({ name, email, message, timestamp });
@@ -77,6 +76,8 @@ app.post('/api/messages', async (req, res) => {
     
     // Send email notification
     await sendEmailNotification(name, email, message);
+
+    console.log(`Successfully processed message from ${name} with ID: ${newMessageRef.id}`);
 
     // If everything above succeeds, this line sends a 200 OK response with JSON data
     res.status(200).json({ id: newMessageRef.id, name, email, message });
