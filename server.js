@@ -1,7 +1,6 @@
 // check if my code is fine
 require("dotenv").config();
 
-
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
@@ -62,7 +61,7 @@ app.post("/api/messages", async (req, res) => {
 
   try {
     const result = await pool.query(
-      "INSERT INTO contacts(name, email, message) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO contacts(name, email, message) VALUES ($1, $2, $3) RETURNING ID",
       [name, email, message]
     );
 
@@ -73,7 +72,7 @@ app.post("/api/messages", async (req, res) => {
     // Send email notification
     await sendEmailNotification(name, email, message);
 
-    console.log(`Successfully processed message from ${name, email}`);
+    console.log(`Successfully processed message from ${(name)}`);
 
     res.status(200).json({ id: savedMessage.id, name, email, message });
   } catch (err) {
