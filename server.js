@@ -1,27 +1,25 @@
+// check if my code is fine
 require("dotenv").config();
+
+
 const express = require("express");
 const cors = require("cors");
-const nodemailer = require('nodemailer');
-const admin = require('firebase-admin')
-
-
-// Initialize Firebase Admin SDK
-const serviceAccount = require('./portfolio-13ed0-firebase-adminsdk-vzjz8-9871a56611.json'); // Update the path
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-const db = admin.firestore();
+const nodemailer = require("nodemailer");
+const { Pool } = require("pg");
 
 // Initialize express and setup middleware
 const app = express();
 app.use(express.json()); // Body parsing middleware
 app.use(cors());
 
-// Email sending function modified for asynchronous operation and better error handling
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
+// Email sending function modified for asynchronous operation and better error handling
 async function sendEmailNotification(name, userEmail, message) {
   try {
-    console.log('Setting up transporter...');
+    console.log("Setting up transporter...");
     const transporter = nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE,
       auth: {
@@ -33,8 +31,8 @@ async function sendEmailNotification(name, userEmail, message) {
     // Email to the website owner
     const ownerMailOptions = {
       from: process.env.EMAIL_USERNAME,
-      to: 'robertjguzman15@gmail.com',
-      subject: 'New Portfolio Message',
+      to: "robertjguzman15@gmail.com",
+      subject: "New Portfolio Message",
       text: `You have received a new message from ${name} (${userEmail}): ${message}`,
     };
 
@@ -42,52 +40,47 @@ async function sendEmailNotification(name, userEmail, message) {
     const userMailOptions = {
       from: process.env.EMAIL_USERNAME,
       to: userEmail,
-      subject: 'Your Message Has Been Received',
+      subject: "Your Message Has Been Received",
       text: `Hello ${name},\n\nWe have received your message and will get back to you as soon as possible. Here's what you sent us:\n\n${message}`,
     };
 
-    console.log('Sending email to owner...');
+    console.log("Sending email to owner...");
     await transporter.sendMail(ownerMailOptions);
-    console.log('Email sent to owner successfully.');
+    console.log("Email sent to owner successfully.");
 
-    console.log('Sending confirmation email to user...');
+    console.log("Sending confirmation email to user...");
     await transporter.sendMail(userMailOptions);
-    console.log('Confirmation email sent to user successfully.');
+    console.log("Confirmation email sent to user successfully.");
   } catch (error) {
-    console.error('Error occurred in sendEmailNotification:', error);
+    console.error("Error occurred in sendEmailNotification:", error);
   }
 }
 
-
 // POST endpoint to receive messages
-app.post('/api/messages', async (req, res) => {
+app.post("/api/messages", async (req, res) => {
   const { name, email, message } = req.body;
-  const timestamp = Date.now();
 
   try {
+    const result = await pool.query(
+      "INSERT INTO contacts(name, email, message) VALUES ($1, $2, $3) RETURNING *",
+      [name, email, message]
+    );
 
-    // create unique id
-    const messageID = `${email}${timestamp}`;
-    // Add message to Firestore
-    const newMessageRef = db.collection('messages').doc(messageID);
-    await newMessageRef.set({ name, email, message, timestamp });
+    const savedMessage = result.rows[0];
 
-    console.log(`Message saved to Firestore with ID: ${messageID}`);
-    
+    console.log(`Message saved to PostgreSQL with ID: ${savedMessage.id}`);
+
     // Send email notification
     await sendEmailNotification(name, email, message);
 
     console.log(`Successfully processed message from ${name}`);
 
-    // If everything above succeeds, this line sends a 200 OK response with JSON data
-    res.status(200).json({ id: newMessageRef.id, name, email, message });
+    res.status(200).json({ id: savedMessage.id, name, email, message });
   } catch (err) {
-    console.error('Error in POST /api/messages:', err.message);
-    res.status(500).send('Server error');
+    console.error("Error in POST /api/messages:", err);
+    res.status(500).send(`Server error: ${err.message}`);
   }
 });
-
-
 
 // Start the server
 const PORT = process.env.PORT || 5001;
