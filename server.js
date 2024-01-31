@@ -77,7 +77,7 @@ app.post('/api/messages', async (req, res) => {
     // Send email notification
     await sendEmailNotification(name, email, message);
 
-    console.log(`Successfully processed message from ${name} with ID: ${newMessageRef.id}`);
+    console.log(`Successfully processed message from ${name}`);
 
     // If everything above succeeds, this line sends a 200 OK response with JSON data
     res.status(200).json({ id: newMessageRef.id, name, email, message });
