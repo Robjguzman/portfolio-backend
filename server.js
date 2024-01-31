@@ -73,7 +73,7 @@ app.post("/api/messages", async (req, res) => {
     // Send email notification
     await sendEmailNotification(name, email, message);
 
-    console.log(`Successfully processed message from ${name}`);
+    console.log(`Successfully processed message from ${name, email}`);
 
     res.status(200).json({ id: savedMessage.id, name, email, message });
   } catch (err) {
