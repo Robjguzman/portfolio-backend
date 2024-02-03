@@ -81,6 +81,22 @@ app.post("/api/messages", async (req, res) => {
   }
 });
 
+app.get("/api/messages", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM contacts");
+
+    const messages = result.rows;
+
+    console.log(`Retrieved all messages`);
+
+    res.status(200).json(messages);
+  } catch (err) {
+    console.error("Error in GET /api/messages:", err);
+    res.status(500).send(`Server error: ${err.message}`);
+  }
+});
+
+
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
