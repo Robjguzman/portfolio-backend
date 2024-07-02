@@ -10,14 +10,30 @@ const app = express();
 app.use(express.json()); // Body parsing middleware
 
 // CORS configuration
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'https://robguzman.netlify.app'];
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://robguzman.netlify.app'], // specify the origins you want to allow
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.error('Not allowed by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true, // include this if your requests require credentials (like cookies, authorization headers, etc.)
+  credentials: true,
   optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
+// Middleware to log CORS headers
+app.use((req, res, next) => {
+  console.log('CORS Headers Set for Origin:', req.headers.origin);
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -80,7 +96,7 @@ app.post("/", async (req, res) => {
     // Send email notification
     await sendEmailNotification(name, email, message);
 
-    console.log(`Successfully processed message from ${(name)}`);
+    console.log(`Successfully processed message from ${name}`);
 
     res.status(200).json({ id: savedMessage.id, name, email, message });
   } catch (err) {
