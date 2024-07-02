@@ -1,4 +1,3 @@
-// check if my code is fine
 require("dotenv").config();
 
 const express = require("express");
@@ -9,7 +8,16 @@ const { Pool } = require("pg");
 // Initialize express and setup middleware
 const app = express();
 app.use(express.json()); // Body parsing middleware
-app.use(cors());
+
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:3000', // specify the origin you want to allow
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, // include this if your requests require credentials (like cookies, authorization headers, etc.)
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -56,7 +64,7 @@ async function sendEmailNotification(name, userEmail, message) {
 }
 
 // POST endpoint to receive messages
-app.post("/api/messages", async (req, res) => {
+app.post("/", async (req, res) => {
   const { name, email, message } = req.body;
 
   try {
@@ -95,7 +103,6 @@ app.get("/api/messages", async (req, res) => {
     res.status(500).send(`Server error: ${err.message}`);
   }
 });
-
 
 // Start the server
 const PORT = process.env.PORT || 5001;
