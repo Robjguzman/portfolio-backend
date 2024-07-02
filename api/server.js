@@ -23,18 +23,18 @@ const allowedOrigins = [
   'http://localhost:3002',  // Local development
   'http://localhost:3003',  // Local development
   'https://robguzman.vercel.app',  // Production frontend
-  'https://portfolio-backend-jet-phi.vercel.app'  // Production backend (if needed)
-]; 
+  'https://portfolio-backend-jet-phi.vercel.app',
+  'http://localhost:5003',  // Production backend (if needed)
+];
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.error('Not allowed by CORS:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+      } else {
+          console.error('Not allowed by CORS:', origin);
+          callback(new Error('Not allowed by CORS'));
+      }
   },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   credentials: true,
   optionsSuccessStatus: 204
 };
@@ -131,7 +131,7 @@ app.get("/api/messages", async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5004;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
