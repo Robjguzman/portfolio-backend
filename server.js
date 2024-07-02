@@ -9,8 +9,15 @@ const { Pool } = require("pg");
 const app = express();
 app.use(express.json()); // Body parsing middleware
 
+// Middleware to log requests and headers
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  console.log('Request headers:', req.headers);
+  next();
+});
+
 // CORS configuration
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'https://robguzman.netlify.app'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'https://robguzman.netlify.app'];
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -20,20 +27,16 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   credentials: true,
   optionsSuccessStatus: 204
 };
 
-app.use(cors(corsOptions));
+// Enable CORS preflight across the board
+app.options('*', cors(corsOptions));
 
-// Middleware to log CORS headers
-app.use((req, res, next) => {
-  console.log('CORS Headers Set for Origin:', req.headers.origin);
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+// Apply CORS to all routes
+app.use(cors(corsOptions));
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
