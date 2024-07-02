@@ -11,7 +11,7 @@ app.use(express.json()); // Body parsing middleware
 
 // CORS configuration
 const corsOptions = {
-  origin: 'http://localhost:3000', // specify the origin you want to allow
+  origin: ['http://localhost:3000', 'https://robguzman.netlify.app'], // specify the origins you want to allow
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true, // include this if your requests require credentials (like cookies, authorization headers, etc.)
   optionsSuccessStatus: 204
