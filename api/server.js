@@ -17,7 +17,7 @@ app.use((req, res, next) => {
 });
 
 // CORS configuration
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'https://robguzman.netlify.app'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'https://robguzman.netlify.app', 'http://https://portfolio-backend-jet-phi.vercel.app/']; 
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
