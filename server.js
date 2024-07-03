@@ -117,7 +117,7 @@ app.post("/", async (req, res) => {
 
 app.get("/api/messages", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM contacts");
+    const result = await pool.query("SELECT * FROM api_messages");
 
     const messages = result.rows;
 
