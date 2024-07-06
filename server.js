@@ -24,7 +24,8 @@ const allowedOrigins = [
   'http://localhost:3003',  // Local development
   'https://robguzman.vercel.app',  // Production frontend
   'https://portfolio-backend-jet-phi.vercel.app',
-  'http://localhost:5003',  // Production backend (if needed)
+  'http://localhost:5003',  // Production backend (if needed)\
+  'https://robguzman.netlify.app/'
 ];
 
 const corsOptions = {
