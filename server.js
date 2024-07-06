@@ -26,6 +26,7 @@ const allowedOrigins = [
   'https://portfolio-backend-jet-phi.vercel.app',
   'http://localhost:5003',  // Production backend (if needed)
 ];
+
 const corsOptions = {
   origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
@@ -115,9 +116,30 @@ app.post("/", async (req, res) => {
   }
 });
 
+
+app.post("/api/messages", async (req, res) => {
+  const { message, status } = req.body;
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO api_messages(message, status) VALUES ($1, $2) RETURNING *",
+      [message, status]
+    );
+
+    const savedMessage = result.rows[0];
+
+    console.log(`Message saved to PostgreSQL with ID: ${savedMessage.id}`);
+
+    res.status(200).json(savedMessage);
+  } catch (err) {
+    console.error("Error in POST /api/messages:", err);
+    res.status(500).send(`Server error: ${err.message}`);
+  }
+});
+
 app.get("/api/messages", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM api_messages");
+    const result = await pool.query("SELECT * FROM api_messages created_at DESC");
 
     const messages = result.rows;
 
