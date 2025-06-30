@@ -17,16 +17,9 @@ app.use((req, res, next) => {
 });
 
 // CORS configuration
-const allowedOrigins = [
-  'http://localhost:3000',  // Local development
-  'http://localhost:3001',  // Local development
-  'http://localhost:3002',  // Local development
-  'http://localhost:3003',  // Local development
-  'https://robguzman.vercel.app',  // Production frontend
-  'https://portfolio-backend-jet-phi.vercel.app',
-  'http://localhost:5003',  // Production backend (if needed)\
-  'https://robguzman.netlify.app/'
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000', 'http://localhost:3001']; // fallback for development
 
 const corsOptions = {
   origin: function (origin, callback) {
